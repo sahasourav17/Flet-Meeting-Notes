@@ -1,13 +1,22 @@
-from views.navbar import navbar_item
+import os
 import flet as ft
 from flet_route import Params,Basket
+import numpy as np
+import sounddevice as sd
+from scipy.io.wavfile import write
+import tkinter as tk
+from tkinter import filedialog
+from views.navbar import navbar_item
 import helper_functions as helper_func
-import os
 
 # variables
-audio_file_path = './audio_files/async.wav'
-
+audio_file_path = './audio_files/ee.wav'
+recording = False
+recording_thread = None
+recording_buffer = []
 transcribed_text = ft.Text(value="")
+status_text = ft.Text(value="")
+recorded_filename=""
 
 def control_buttons_row(align: ft.MainAxisAlignment):
     buttons = [
@@ -61,7 +70,7 @@ def show_audio_spectrum_with_control():
         )
     )
     
-def show_transcribed_meeting():
+def show_transcribed_meeting(): 
     return ft.Card(
         content= ft.Container(
             transcribed_text,
@@ -72,8 +81,16 @@ def show_transcribed_meeting():
     
 
 def RecordView(page: ft.Page, params: Params, basket: Basket ):
+    global recording, recording_buffer, recording_thread, recorded_filename
+    transcribed_text.value = ''
+    status_text.value = ''
+    recording = False
+    recording_buffer = []
+    recording_thread = None
+    recorded_filename = ''
     controls = [
             ft.Text("Record", size=30, weight="bold"),
+            status_text,
             show_audio_spectrum_with_control(),
             ft.ElevatedButton('Transcribe Meeting', on_click=handle_transcribe_meeting),
             show_transcribed_meeting(),
@@ -83,17 +100,60 @@ def RecordView(page: ft.Page, params: Params, basket: Basket ):
 
 
 async def handle_transcribe_meeting(e):
-    long_text = await helper_func.translate_longer_audio_to_text(audio_file_path)
+    long_text = await helper_func.translate_longer_audio_to_text(recorded_filename)
     print(f'long text: {long_text}')
     transcribed_text.value = long_text
+    show_transcribed_meeting()
     e.page.update()
 
 
-async def handle_start_recording(_):
-    pass
+async def handle_start_recording(e):
+    global recording, recording_thread
+    if not recording:
+        recording = True
+        status_text.value = 'Recording started...'
+        e.page.update()
+        sd.default.channels = 1
+        sd.default.samplerate = 44100
+        sd.default.dtype = 'int16'
+        recording_thread = sd.InputStream(callback=audio_callback)
+        recording_thread.start()
+def audio_callback(indata, frames, time, status):
+    global recording, recording_buffer
+    if status:
+        print(status)
+    if recording:
+        recording_buffer.append(indata.copy())
+        
 
-async def handle_stop_recording(_):
-    pass
+async def handle_stop_recording(e):
+    global recording
+    recording = False
+    status_text.value = "Recording stopped. You can now save the recording."
+    recording_thread.stop()
+    e.page.update()
 
-async def handle_save_recording(_):
-    pass
+async def handle_save_recording(e):
+    global recording_buffer,recorded_filename,recording_thread, recording
+    if recording_buffer:
+        fs = 44100
+        recorded_content = np.concatenate(recording_buffer, axis=0)
+        root = tk.Tk() 
+        root.withdraw()
+        root.attributes('-topmost', True)
+        filename = filedialog.asksaveasfilename(
+            parent=root,
+            defaultextension=".wav", 
+            filetypes=[("Wave files", "*.wav"), ("MP3 files", "*.mp3"), ("M4A files", "*.m4a")]
+        )
+        if filename:
+            write(filename, fs, recorded_content)
+            recorded_filename = filename
+            print(f"Recording saved to {recorded_filename}")
+            status_text.value = f"Recording saved to {recorded_filename}"
+        else:
+            status_text.value = "Please enter a valid filename."
+        recording_buffer = []
+        recording = False
+        e.page.update()
+        root.destroy()
