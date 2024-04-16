@@ -5,7 +5,6 @@ import helper_functions as helper_func
 import os
 
 # variables
-gcs_bucket_name = 'repl-audio-meeting-notes'
 audio_file_path = './audio_files/async.wav'
 
 transcribed_text = ft.Text(value="")
