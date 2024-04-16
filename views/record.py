@@ -60,9 +60,7 @@ def show_audio_spectrum_with_control():
                     ft.ListTile(
                         leading=ft.Icon(ft.icons.ALBUM),
                         title=ft.Text("Meeting Notes"),
-                        subtitle=ft.Text(
-                            "Record your meeting and get summary of the meeting in ease"
-                        ),
+                        subtitle=status_text,
                     ),
                     control_buttons_row(ft.MainAxisAlignment.CENTER)
                 ]

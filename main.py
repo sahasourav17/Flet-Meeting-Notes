@@ -107,7 +107,7 @@ async def main(page: ft.Page):
     # Disable animation transition
     theme = ft.Theme()
     page.theme = theme
-    await page.update_async()
+    page.update()
     
     # await page.add_async(
     #     ft.ElevatedButton("Play"),
