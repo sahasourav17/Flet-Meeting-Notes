@@ -10,7 +10,7 @@ from views.navbar import navbar_item
 import helper_functions as helper_func
 
 # variables
-audio_file_path = './audio_files/ee.wav'
+# audio_file_path = './audio_files/ee.wav'
 recording = False
 recording_thread = None
 recording_buffer = []
@@ -26,6 +26,13 @@ def control_buttons_row(align: ft.MainAxisAlignment):
             icon_size=20,
             tooltip="Start",
             on_click=handle_start_recording,
+        ),
+        ft.IconButton(
+            icon=ft.icons.PAUSE_CIRCLE_ROUNDED,
+            icon_color="red400",
+            icon_size=20,
+            tooltip="Pause",
+            on_click=handle_pause_recording,
         ),
         ft.IconButton(
             icon=ft.icons.STOP_CIRCLE,
@@ -123,6 +130,11 @@ def audio_callback(indata, frames, time, status):
     if recording:
         recording_buffer.append(indata.copy())
         
+async def handle_pause_recording(e):
+    global recording,recording_thread
+    recording = False
+    status_text.value = "Recording paused."
+    e.page.update()
 
 async def handle_stop_recording(e):
     global recording
