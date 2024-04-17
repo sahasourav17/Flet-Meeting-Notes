@@ -135,7 +135,7 @@ async def handle_pause_recording(e):
     e.page.update()
 
 async def handle_stop_recording(e):
-    global recording
+    global recording, recording_thread
     recording = False
     status_text.value = "Recording stopped. You can now save the recording."
     recording_thread.stop()
