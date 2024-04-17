@@ -10,7 +10,7 @@ from views.navbar import navbar_item
 import helper_functions as helper_func
 
 # variables
-audio_file_path = './audio_files/ee.wav'
+# audio_file_path = './audio_files/ee.wav'
 recording = False
 recording_thread = None
 recording_buffer = []
@@ -26,6 +26,13 @@ def control_buttons_row(align: ft.MainAxisAlignment):
             icon_size=20,
             tooltip="Start",
             on_click=handle_start_recording,
+        ),
+        ft.IconButton(
+            icon=ft.icons.PAUSE_CIRCLE_ROUNDED,
+            icon_color="red400",
+            icon_size=20,
+            tooltip="Pause",
+            on_click=handle_pause_recording,
         ),
         ft.IconButton(
             icon=ft.icons.STOP_CIRCLE,
@@ -60,9 +67,7 @@ def show_audio_spectrum_with_control():
                     ft.ListTile(
                         leading=ft.Icon(ft.icons.ALBUM),
                         title=ft.Text("Meeting Notes"),
-                        subtitle=ft.Text(
-                            "Record your meeting and get summary of the meeting in ease"
-                        ),
+                        subtitle=status_text,
                     ),
                     control_buttons_row(ft.MainAxisAlignment.CENTER)
                 ]
@@ -83,14 +88,13 @@ def show_transcribed_meeting():
 def RecordView(page: ft.Page, params: Params, basket: Basket ):
     global recording, recording_buffer, recording_thread, recorded_filename
     transcribed_text.value = ''
-    status_text.value = ''
+    status_text.value = 'Record and Transcribe your meeting instantly'
     recording = False
     recording_buffer = []
     recording_thread = None
     recorded_filename = ''
     controls = [
             ft.Text("Record", size=30, weight="bold"),
-            status_text,
             show_audio_spectrum_with_control(),
             ft.ElevatedButton('Transcribe Meeting', on_click=handle_transcribe_meeting),
             show_transcribed_meeting(),
@@ -103,7 +107,6 @@ async def handle_transcribe_meeting(e):
     long_text = await helper_func.translate_longer_audio_to_text(recorded_filename)
     print(f'long text: {long_text}')
     transcribed_text.value = long_text
-    show_transcribed_meeting()
     e.page.update()
 
 
@@ -125,9 +128,14 @@ def audio_callback(indata, frames, time, status):
     if recording:
         recording_buffer.append(indata.copy())
         
+async def handle_pause_recording(e):
+    global recording,recording_thread
+    recording = False
+    status_text.value = "Recording paused."
+    e.page.update()
 
 async def handle_stop_recording(e):
-    global recording
+    global recording, recording_thread
     recording = False
     status_text.value = "Recording stopped. You can now save the recording."
     recording_thread.stop()
