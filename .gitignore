@@ -3,3 +3,6 @@ env
 __pycache__
 tmp
 audio_files/*
+build
+main.spec
+dist

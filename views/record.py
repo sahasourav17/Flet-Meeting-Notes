@@ -78,13 +78,76 @@ def show_audio_spectrum_with_control():
     )
 
 
+def handle_edit_modal(e):
+    def close_dlg(e):
+        dlg_modal.open = False
+        e.page.update()
+
+    def handle_save_note(e):
+        transcribed_text.value = dlg_modal.content.value
+        close_dlg(e)
+
+    dlg_modal = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("Edit Notes"),
+        content=ft.TextField(
+            value=transcribed_text.value,
+            text_size=12,
+            multiline=True,
+            min_lines=1,
+            max_lines=10,
+        ),
+        actions=[
+            ft.TextButton("Save", on_click=handle_save_note),
+            ft.TextButton("Cancel", on_click=close_dlg),
+        ],
+        actions_alignment=ft.MainAxisAlignment.END,
+        on_dismiss=lambda e: print("Modal dialog dismissed!"),
+    )
+
+    e.page.dialog = dlg_modal
+    dlg_modal.open = True
+    e.page.update()
+
+
 def show_transcribed_meeting():
-    return ft.Card(content=ft.Container(transcribed_text, padding=8, expand=1))
+    return ft.Card(
+        content=ft.Container(
+            content=ft.Column(
+                [
+                    ft.Column(
+                        [
+                            transcribed_text,
+                        ],
+                        alignment=ft.MainAxisAlignment.START,
+                        horizontal_alignment=ft.CrossAxisAlignment.END,
+                    ),
+                    ft.Row(
+                        [
+                            ft.IconButton(
+                                icon=ft.icons.EDIT,
+                                tooltip="Edit",
+                                on_click=handle_edit_modal,
+                            )
+                        ],
+                        alignment=ft.MainAxisAlignment.END,
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            padding=10,
+            alignment=ft.alignment.center,
+            width="full",
+            height=150,
+            border=ft.border.all(1, ft.colors.BLACK),
+            border_radius=10,
+        )
+    )
 
 
 def RecordView(page: ft.Page, params: Params, basket: Basket):
     global recording, recording_buffer, recording_thread, recorded_filename
-    transcribed_text.value = ""
+    transcribed_text.value = "Transcribed meeting will be appeared here..."
     status_text.value = "Record and Transcribe your meeting instantly"
     recording = False
     recording_buffer = []
