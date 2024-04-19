@@ -78,6 +78,38 @@ def show_audio_spectrum_with_control():
     )
 
 
+def handle_edit_modal(e):
+    def close_dlg(e):
+        dlg_modal.open = False
+        e.page.update()
+
+    def handle_save_note(e):
+        transcribed_text.value = dlg_modal.content.value
+        close_dlg(e)
+
+    dlg_modal = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("Edit Notes"),
+        content=ft.TextField(
+            value=transcribed_text.value,
+            text_size=12,
+            multiline=True,
+            min_lines=1,
+            max_lines=10,
+        ),
+        actions=[
+            ft.TextButton("Save", on_click=handle_save_note),
+            ft.TextButton("Cancel", on_click=close_dlg),
+        ],
+        actions_alignment=ft.MainAxisAlignment.END,
+        on_dismiss=lambda e: print("Modal dialog dismissed!"),
+    )
+
+    e.page.dialog = dlg_modal
+    dlg_modal.open = True
+    e.page.update()
+
+
 def show_transcribed_meeting():
     return ft.Card(
         content=ft.Container(
@@ -91,7 +123,13 @@ def show_transcribed_meeting():
                         horizontal_alignment=ft.CrossAxisAlignment.END,
                     ),
                     ft.Row(
-                        [ft.IconButton(icon=ft.icons.EDIT, tooltip="Edit")],
+                        [
+                            ft.IconButton(
+                                icon=ft.icons.EDIT,
+                                tooltip="Edit",
+                                on_click=handle_edit_modal,
+                            )
+                        ],
                         alignment=ft.MainAxisAlignment.END,
                     ),
                 ],
