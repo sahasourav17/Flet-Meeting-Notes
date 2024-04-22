@@ -1,4 +1,5 @@
 import os
+import datetime
 import flet as ft
 from flet_route import Params, Basket
 import numpy as np
@@ -10,7 +11,6 @@ from views.navbar import navbar_item
 import helper_functions as helper_func
 
 # variables
-# audio_file_path = './audio_files/ee.wav'
 recording = False
 recording_thread = None
 recording_buffer = []
@@ -145,6 +145,57 @@ def show_transcribed_meeting():
     )
 
 
+def save_notes_buttons_row(page: ft.Page, align: ft.MainAxisAlignment):
+    global transcribed_text, recorded_filename
+
+    def save_note_file(e: ft.FilePickerResultEvent):
+        save_location = e.path
+        print(f"location of the file: {save_location}")
+        if save_location:
+            try:
+                current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+
+                file_content = f"Meeting Notes\nDate: {current_date}\n\n"
+                file_content += transcribed_text.value
+
+                with open(save_location, "w", encoding="utf-8") as file:
+                    file.write(file_content)
+            except Exception as e:
+                print(f"Error: {e}")
+        page.update()
+
+    print("format: %s" % format)
+    file_picker = ft.FilePicker(on_result=save_note_file)
+    page.overlay.append(file_picker)
+
+    buttons = [
+        ft.FilledTonalButton(
+            content=ft.Text("Save as Docx", size=16),
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(radius=10),
+            ),
+            on_click=lambda _: file_picker.save_file(allowed_extensions=["docx"]),
+        ),
+        ft.FilledTonalButton(
+            content=ft.Text("Save as PDF", size=16),
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(radius=10),
+            ),
+            on_click=lambda _: file_picker.save_file(allowed_extensions=["pdf"]),
+        ),
+    ]
+    return ft.Container(
+        content=ft.Column(
+            [
+                ft.Container(content=ft.Row(buttons, alignment=align)),
+            ],
+            tight=True,
+        ),
+        adaptive=True,
+        padding=ft.padding.only(top=16),
+    )
+
+
 def RecordView(page: ft.Page, params: Params, basket: Basket):
     global recording, recording_buffer, recording_thread, recorded_filename
     transcribed_text.value = "Transcribed meeting will be appeared here..."
@@ -158,6 +209,7 @@ def RecordView(page: ft.Page, params: Params, basket: Basket):
         show_audio_spectrum_with_control(),
         ft.ElevatedButton("Transcribe Meeting", on_click=handle_transcribe_meeting),
         show_transcribed_meeting(),
+        save_notes_buttons_row(page, ft.MainAxisAlignment.CENTER),
         navbar_item(page),
     ]
     return ft.View(controls=controls)
