@@ -4,8 +4,8 @@ from flet_route import Params, Basket
 
 
 def MeetingView(page: ft.Page, params: Params, basket: Basket):
-    def create_meeting():
-        pass
+    def handle_add_meeting(e):
+        page.go("/add-meeting")
 
     def show_meeting():
         pass
@@ -26,6 +26,7 @@ def MeetingView(page: ft.Page, params: Params, basket: Basket):
                     tooltip="Add Meeting",
                     adaptive=True,
                     padding=ft.padding.only(top=6),
+                    on_click=handle_add_meeting,
                 ),
             ],
             alignment=align,
