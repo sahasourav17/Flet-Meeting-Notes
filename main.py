@@ -7,6 +7,7 @@ from views.help import HelpView
 from views.meeting import MeetingView
 from views.settings import SettingsView
 from views.record import RecordView
+from views.create_meeting import CreateMeetingView
 
 
 async def main(page: ft.Page):
@@ -23,6 +24,7 @@ async def main(page: ft.Page):
         path(url="/meetings", clear=True, view=MeetingView),
         path(url="/settings", clear=True, view=SettingsView),
         path(url="/help", clear=True, view=HelpView),
+        path(url="/add-meeting", clear=True, view=CreateMeetingView),
     ]
 
     Routing(page=page, app_routes=app_routes)

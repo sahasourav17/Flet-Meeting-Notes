@@ -30,6 +30,7 @@ def navbar_item(page: ft.Page):
             "/meetings": 1,
             "/settings": 2,
             "/help": 3,
+            "/add-meeting": 1,
         }
         return route_mapping.get(route, 0)
 
